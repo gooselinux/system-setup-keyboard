@@ -1,0 +1,56 @@
+From d0848d5a74197efbfb7043d880f43a6e9aae1647 Mon Sep 17 00:00:00 2001
+From: Peter Hutterer <peter.hutterer@who-t.net>
+Date: Fri, 19 Mar 2010 10:37:41 +1000
+Subject: [PATCH] If parameters are given, print out the usage and return.
+
+system-setup-keyboard doesn't support any parameters, so the likely ones
+given are --help/-h in which case returning is the right thing to do anyway.
+Any other parameter shouldn't just be silently ignored.
+
+Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+---
+ system-setup-keyboard.c |   14 +++++++++++++-
+ 1 files changed, 13 insertions(+), 1 deletions(-)
+
+diff --git a/system-setup-keyboard.c b/system-setup-keyboard.c
+index 75a76be..44811a1 100644
+--- a/system-setup-keyboard.c
++++ b/system-setup-keyboard.c
+@@ -27,6 +27,7 @@
+ #include <glib.h>
+ #include <string.h>
+ #include <stdlib.h>
++#include <stdio.h>
+ 
+ #define KBDCONFIG "/etc/sysconfig/keyboard"
+ #define KEY_OPTIONS "input.xkb.options"
+@@ -81,7 +82,13 @@ gchar *merge_key(LibHalContext *hal_ctx, gchar *udi, gchar* key, gchar *value) {
+ 	return merged;
+ }
+ 
+-int main() {
++static void usage(void) {
++	printf("system-setup-keyboard is a HAL callout that converts "
++		"/etc/sysconfig/keyboard into the required HAL keys for X.org. "
++		"For more info see the system-config-keyboard man page.\n");
++}
++
++int main(int argc, char **argv) {
+ 	GKeyFile *cfg_file;
+ 	gchar *buffer, *conf;
+ 
+@@ -96,6 +103,11 @@ int main() {
+ 	/* connect to HAL */
+ 	LibHalContext *hal_ctx;
+ 
++	if (argc > 1) {
++		usage();
++		return 1;
++	}
++
+ 	if((udi = getenv("UDI")) == NULL) 
+ 		return 1;
+ 
+-- 
+1.6.6.1
+

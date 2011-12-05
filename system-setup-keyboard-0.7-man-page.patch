@@ -1,0 +1,78 @@
+From 00e172e2c4cd4f2572c2b7df8c8a3e6711dbd0ba Mon Sep 17 00:00:00 2001
+From: Peter Hutterer <peter.hutterer@who-t.net>
+Date: Fri, 12 Mar 2010 10:21:38 +1000
+Subject: [PATCH] Add a man page.
+
+Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+(cherry picked from commit 2195846deaa0de55c1d50cc98d58b65289cda7c0)
+
+The man page itself was back-ported to describe the HAL functionality.
+
+Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+---
+ Makefile                  |   13 +++++++++++--
+ system-setup-keyboard.man |   23 +++++++++++++++++++++++
+ 2 files changed, 34 insertions(+), 2 deletions(-)
+ create mode 100644 system-setup-keyboard.man
+
+diff --git a/Makefile b/Makefile
+index b144d56..7e62518 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1,13 +1,22 @@
+ CC=gcc
+ CFLAGS=
++MAN_SECTION=1
+ 
+ all:
+ 	python get_layouts.py > keyboards.h
+ 	$(CC) system-setup-keyboard.c `pkg-config --cflags --libs hal glib-2.0` $(CFLAGS) -o system-setup-keyboard 
+ 
+-install:
++install: all install-man
+ 	install -D -m 755 system-setup-keyboard $(DESTDIR)/usr/bin/system-setup-keyboard
+ 	install -D -m 644 10-x11-keymap.fdi $(DESTDIR)/usr/share/hal/fdi/policy/10osvendor/10-x11-keymap.fdi
+ 
++install-man: system-setup-keyboard.$(MAN_SECTION)
++	install -D -m 755 $< $(DESTDIR)/usr/share/man/man1/$<
++	gzip -f $(DESTDIR)/usr/share/man/man1/$<
++
++system-setup-keyboard.$(MAN_SECTION): system-setup-keyboard.man
++	sed -e 's|__version__|$(VERSION)|' \
++	    -e 's|__section__|$(MAN_SECTION)|' < $< > $@
++
+ clean:
+-	rm -f system-setup-keyboard keyboards.h
++	rm -f system-setup-keyboard keyboards.h system-setup-keyboard.$(MAN_SECTION)
+diff --git a/system-setup-keyboard.man b/system-setup-keyboard.man
+new file mode 100644
+index 0000000..a36721c
+--- /dev/null
++++ b/system-setup-keyboard.man
+@@ -0,0 +1,23 @@
++.TH SYSTEM-SETUP-KEYBOARD __section__ "__version__"
++.SH "NAME"
++system-setup-keyboard \- HAL keyboard layout callout
++.SH "SYNOPSIS"
++.sp
++.nf
++system\-setup\-keyboard
++.fi
++.SH "DESCRIPTION"
++.sp
++system\-setup\-keyboard is a HAL keyboard layout callout. When a keyboard is
++plugged into the system, system-setup-keyboard reads the system-wide
++keyboard configuration from /etc/sysconfig/keyboard and merges the
++appropriate XKB options into the HAL description of the device. 
++.SH "AUTHORS"
++.sp
++Adel Gadllah <adel.gadllah@gmail.com>
++.br
++Peter Hutterer <peter.hutterer@redhat.com>
++.SH "SEE ALSO"
++.sp
++xorg.conf(5)
++.RE
+-- 
+1.6.6.1
+

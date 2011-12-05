@@ -1,0 +1,35 @@
+From b96ac570ac66e2db5bc2668274162f4b14f213b0 Mon Sep 17 00:00:00 2001
+From: Peter Hutterer <peter.hutterer@who-t.net>
+Date: Thu, 3 Jun 2010 11:55:05 +1000
+Subject: [PATCH] Apply XKB rules to all keyboard-like devices.  (rhbz595654)
+
+GDM relies on the XKB_RULES_NAMES property for the initial keyboard
+configuration. This property is overwritten by the last device to be
+initialised in the server. If the last device is an input.keys device like
+the Video Bus, the default XKB settings are applied and the "us" model is in
+the property. This again makes GDM seemingly ignore the system settings.
+
+Fix this by applying the keymap in /etc/sysconfig/keyboard to all devices
+that are handled as keyboards in X.
+
+Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+---
+ 10-x11-keymap.fdi |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/10-x11-keymap.fdi b/10-x11-keymap.fdi
+index d571749..75387cc 100644
+--- a/10-x11-keymap.fdi
++++ b/10-x11-keymap.fdi
+@@ -1,7 +1,7 @@
+ <?xml version="1.0" encoding="ISO-8859-1"?> <!-- -*- SGML -*- -->
+ <deviceinfo version="0.2">
+     <device>
+-	<match key="info.capabilities" contains="input.keyboard">
++	<match key="info.capabilities" contains="input.keys">
+             <merge key="input.xkb.options" type="string">terminate:ctrl_alt_bksp</merge>
+ 	    <append key="info.callouts.add" type="strlist">system-setup-keyboard</append>
+ 	</match>
+-- 
+1.6.5.2
+
